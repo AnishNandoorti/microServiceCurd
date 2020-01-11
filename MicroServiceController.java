@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.microservice.entity.CustResponse;
 import com.microservice.entity.CustomerData;
 import com.microservice.repository.CustRepository;
+import com.microservice.repository.DataRespository;
 
 @RestController
 @RequestMapping(value = "/api")
@@ -20,12 +21,24 @@ public class MicroServiceController {
 	@Autowired
 	private CustRepository repository;
 
+	@Autowired
+	private DataRespository dataRepo;
+
 	@RequestMapping(value = "/getCustData", method = RequestMethod.POST)
-	public CustomerData getCustDatabyId(@RequestBody CustomerData acctNum) {
+	public CustResponse getCustDatabyId(@RequestBody CustomerData acctNum) {
 		CustomerData custData = new CustomerData();
+		CustResponse custResponse = new CustResponse();
 		custData = repository.findById(acctNum.getId());
-		System.out.println(custData.getAddress());
-		return custData;
+		if (null != custData) {
+			custResponse.setCustData(acctNum);
+			custResponse.setRespCode("0000");
+			custResponse.setRespDesc("Success");
+		} else {
+			custResponse.setCustData(acctNum);
+			custResponse.setRespCode("3333");
+			custResponse.setRespDesc("Account Number doesn't exist");
+		}
+		return custResponse;
 	}
 
 	@RequestMapping(value = "/getAllCustData", method = RequestMethod.GET)
@@ -86,7 +99,8 @@ public class MicroServiceController {
 
 	@RequestMapping(value = "/deleteCustData", method = RequestMethod.POST)
 	public CustResponse DeleteCustData(@RequestBody CustomerData data) {
-		repository.deleteById(Long.valueOf(data.getId()));
+		System.out.println(Long.valueOf(data.getId()));
+		dataRepo.deleteById(data.getId());
 		CustomerData custData = new CustomerData();
 		CustResponse custResponse = new CustResponse();
 		custData = repository.findById(data.getId());
